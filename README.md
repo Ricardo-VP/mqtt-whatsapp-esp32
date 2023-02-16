@@ -1,6 +1,6 @@
 # Whatsapp Bot - Blinking LED
 
-This project use an MQTT broker and WhatsappWeb.js library to be able to turn on/off using whatsapp messages.
+This project use an MQTT broker and WhatsappWeb.js library to be able to turn on/off the led using whatsapp messages.
 
 ## Techonologies
 
