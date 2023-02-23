@@ -1,18 +1,37 @@
 import { mqttClient } from './mqtt.js'
 import { whatsapp } from './whatsapp.js'
 
-whatsapp.on('message_create', (message) => {
-  console.log(`Message received: <<${message.body}>>`)
+const NUMBERS = ['XXXX@c.us', 'XXXX@c.us']
 
-  if (message.body === '/ledOn') {
-    mqttClient.publish('esp32/led', '/ledOn')
+mqttClient.on('message', (topic, message) => {
+  console.log(`Message received: <<${message.toString()}>>`)
 
-    whatsapp.sendMessage(message.from, 'Led: ON')
-  }
+  if (topic === 'esp32/led') {
+    if (message.toString() === 'ALARMA ENCENDIDA') {
+      NUMBERS.forEach((number) => {
+        whatsapp.sendMessage(number, 'Alarma: ON')
+      })
+    }
 
-  if (message.body === '/ledOff') {
-    mqttClient.publish('esp32/led', '/ledOff')
-
-    whatsapp.sendMessage(message.from, 'Led: OFF')
+    if (message.toString() === 'sendAlert') {
+      NUMBERS.forEach((number) => {
+        whatsapp.sendMessage(number, 'Alarma: OFF')
+      })
+    }
   }
 })
+
+whatsapp.on('message', (message) => apagarAlarma(message))
+
+whatsapp.on('message_create', (message) => apagarAlarma(message))
+
+function apagarAlarma(message) {
+  console.log(`Message received: <<${message.body}>>`)
+  console.log(`From: ${message.from}`)
+
+  if (NUMBERS.includes(message.from)) {
+    if (message.body === '/apagar') {
+      mqttClient.publish('esp32/led', '/apagar')
+    }
+  }
+}

@@ -4,6 +4,12 @@
 // Pin del LED
 const byte led_gpio = 33;
 
+// Pin del boton
+const byte btn_gpio = 32;
+
+int lastState = HIGH; // the previous state from the input pin
+int currentState;     // the current reading from the input pin
+
 // Nombre del cliente y tópico MQTT donde se publicarán los mensajes
 const char *clientName = "ESP32";
 const char *topicLed = "esp32/led";
@@ -25,6 +31,9 @@ void setup() {
   // Configurar pin LED
   pinMode(led_gpio, OUTPUT);
 
+  // Configurar pin del BOTON
+  pinMode(btn_gpio, INPUT_PULLUP);
+
   // Conecta el módulo ESP32 a la red WiFi
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
@@ -43,6 +52,15 @@ void loop() {
     connectMqtt();
   }
   client.loop();
+
+  currentState = digitalRead(btn_gpio);
+
+  if(lastState == LOW && currentState == HIGH){
+    Serial.println("ALARMA ENCENDIDA");
+    client.publish(topicLed, "ALARMA ENCENDIDA");
+
+  }
+  lastState = currentState;
 }
 
 void connectMqtt() {
@@ -73,9 +91,9 @@ void callback(char *topic, byte *payload, unsigned int length) {
   }
 
   Serial.print(message);
-  if (message == "/ledOn") {
+  if (message == "ALARMA ENCENDIDA") {
     digitalWrite(led_gpio, HIGH);
-  } else if (message == "/ledOff") {
+  } else if (message == "/apagar") {
     digitalWrite(led_gpio, LOW);
   }
 
